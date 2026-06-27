@@ -1,0 +1,103 @@
+<!-- Heredamos la estructura base -->
+{% extends "base.html" %}
+{% block title %}Buscar – HelloContact{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+  <div class="page-header">
+    <h1 class="page-title">Buscar Contacto</h1>
+    <a href="{{ url_for('contactos') }}" class="btn-back">← Volver</a>
+  </div>
+
+  <!-- Un solo formulario que contiene el input y el botón Buscar -->
+  <form method="GET" action="{{ url_for('buscar') }}">
+    <div class="search-bar">
+      <div class="sb-field">
+        <span class="s-icon">🔍</span>
+        <input type="text" name="q"
+               placeholder="Buscar por nombre o apellido..."
+               value="{{ query }}" autofocus/>
+      </div>
+      <button type="submit" class="btn btn-blue">🔍 Buscar</button>
+      <!-- Botón limpiar solo aparece si hay una búsqueda activa -->
+      {% if query %}
+        <a href="{{ url_for('buscar') }}" class="btn btn-outline">✕ Limpiar</a>
+      {% endif %}
+    </div>
+  </form>
+
+  <!-- Solo mostramos resultados si el usuario buscó algo -->
+  {% if query %}
+    {% if resultados %}
+      <!-- Mensaje de éxito -->
+      <div class="flash flash-success" style="margin-bottom:16px;">
+        ✅ Se encontraron {{ resultados|length }} contacto(s) con "<strong>{{ query }}</strong>"
+      </div>
+
+      <!-- Tabla de resultados -->
+      <div class="table-wrap">
+        <table class="contacts-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Teléfono</th>
+              <th>Correo</th>
+              <th>Tipo</th>
+              <th class="th-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in resultados %}
+            <tr>
+              <td class="td-name">{{ c.nombre }} {{ c.apellido }}</td>
+              <td>{{ c.telefono }}</td>
+              <td>{{ c.correo }}</td>
+              <td>{% if c.favorito == 'Sí' %}⭐ Favorito{% else %}Normal{% endif %}</td>
+              <td>
+                <div class="td-acts">
+                  <a href="{{ url_for('detalle', fila=c.fila) }}" class="act-btn">👁</a>
+                  <a href="{{ url_for('editar', fila=c.fila) }}" class="act-btn">✏️</a>
+                  <button class="act-btn"
+                          onclick="abrirEliminar('{{ url_for('eliminar', fila=c.fila) }}', '{{ c.nombre }} {{ c.apellido }}')">
+                    🗑
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    {% else %}
+      <!-- Mensaje cuando no se encontraron resultados -->
+      <div class="flash flash-error" style="margin-bottom:16px;">
+        ❌ No se encontraron contactos con "<strong>{{ query }}</strong>"
+      </div>
+    {% endif %}
+  {% endif %}
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div id="modal-eliminar" class="modal-overlay hidden">
+  <div class="modal-card">
+    <div class="del-header">
+      <div class="del-icon">🗑️</div>
+      <div>
+        <p class="del-title">Eliminar Contacto</p>
+        <p class="del-sub">Esta acción no se puede deshacer</p>
+      </div>
+    </div>
+    <p class="del-msg">
+      ¿Está seguro/a que desea eliminar al contacto <strong id="del-nombre"></strong>?
+      Esta acción no puede ser revertida.
+    </p>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
+      <form id="form-eliminar" method="POST" style="margin:0;">
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

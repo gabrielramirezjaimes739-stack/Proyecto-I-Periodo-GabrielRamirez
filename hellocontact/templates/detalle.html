@@ -1,0 +1,128 @@
+<!-- Heredamos la estructura base -->
+{% extends "base.html" %}
+<!-- El título usa el nombre del contacto actual -->
+{% block title %}{{ contacto.nombre }} {{ contacto.apellido }} – HelloContact{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+  <div class="detail-outer">
+
+    <!-- Encabezado: botón volver y acciones Editar/Eliminar -->
+    <div class="detail-top">
+      <div>
+        <a href="{{ url_for('contactos') }}" class="btn-back">← Volver</a>
+        <h1 class="page-title" style="margin-top:8px;">Detalles del Contacto</h1>
+      </div>
+      <div class="detail-top-r">
+        <!-- Botón editar lleva al formulario de edición con la fila del contacto -->
+        <a href="{{ url_for('editar', fila=contacto.fila) }}" class="btn btn-edit">✏️ Editar</a>
+        <!-- Botón eliminar abre el modal de confirmación -->
+        <button class="btn btn-danger"
+                onclick="abrirEliminar('{{ url_for('eliminar', fila=contacto.fila) }}', '{{ contacto.nombre }} {{ contacto.apellido }}')">
+          🗑 Eliminar
+        </button>
+      </div>
+    </div>
+
+    <!-- Card con toda la información del contacto -->
+    <div class="detail-card">
+
+      <!-- Avatar con las iniciales del contacto + nombre y categoría -->
+      <div class="detail-hero">
+        <div class="d-avatar">
+          <!-- Primera letra del nombre y del apellido en mayúscula -->
+          {{ contacto.nombre[0]|upper }}{% if contacto.apellido %}{{ contacto.apellido[0]|upper }}{% endif %}
+        </div>
+        <div>
+          <p class="d-name">{{ contacto.nombre }} {{ contacto.apellido }}</p>
+          <p class="d-company">
+            {{ contacto.categoria }}
+            {% if contacto.favorito == 'Sí' %} · ⭐ Favorito{% endif %}
+          </p>
+        </div>
+      </div>
+
+      <!-- Grid de dos columnas con los datos del contacto -->
+      <div class="detail-fields">
+
+        <!-- Columna izquierda -->
+        <div class="d-col">
+          <div class="d-field">
+            <div class="d-icon-box">✉️</div>
+            <div>
+              <p class="f-label">Correo Electrónico</p>
+              <p class="f-value">{{ contacto.correo }}</p>
+            </div>
+          </div>
+          <div class="d-field">
+            <div class="d-icon-box">📞</div>
+            <div>
+              <p class="f-label">Teléfono</p>
+              <p class="f-value">{{ contacto.telefono }}</p>
+            </div>
+          </div>
+          <div class="d-field">
+            <div class="d-icon-box">📂</div>
+            <div>
+              <p class="f-label">Categoría</p>
+              <p class="f-value">{{ contacto.categoria }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna derecha -->
+        <div class="d-col">
+          <div class="d-field">
+            <div class="d-icon-box">📍</div>
+            <div>
+              <p class="f-label">Dirección</p>
+              <!-- Si no tiene dirección, mostramos un guión -->
+              <p class="f-value">{{ contacto.direccion if contacto.direccion else '—' }}</p>
+            </div>
+          </div>
+          <div class="d-field">
+            <div class="d-icon-box">⭐</div>
+            <div>
+              <p class="f-label">Tipo de Contacto</p>
+              <p class="f-value">{{ 'Favorito' if contacto.favorito == 'Sí' else 'Normal' }}</p>
+            </div>
+          </div>
+          <div class="d-field">
+            <div class="d-icon-box">{% if contacto.estado == 'Conectado' %}🟢{% else %}🔴{% endif %}</div>
+            <div>
+              <p class="f-label">Estado Actual</p>
+              <p class="f-value" style="color:{% if contacto.estado == 'Conectado' %}#16a34a{% else %}#ef4444{% endif %};">
+                {{ contacto.estado }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmación para eliminar contacto -->
+<div id="modal-eliminar" class="modal-overlay hidden">
+  <div class="modal-card">
+    <div class="del-header">
+      <div class="del-icon">🗑️</div>
+      <div>
+        <p class="del-title">Eliminar Contacto</p>
+        <p class="del-sub">Esta acción no se puede deshacer</p>
+      </div>
+    </div>
+    <p class="del-msg">
+      ¿Está seguro/a que desea eliminar al contacto <strong id="del-nombre"></strong>?
+      Esta acción no puede ser revertida.
+    </p>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
+      <form id="form-eliminar" method="POST" style="margin:0;">
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

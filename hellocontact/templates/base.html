@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <!-- El título cambia en cada página usando bloques de Jinja2 -->
+  <title>{% block title %}HelloContact{% endblock %}</title>
+  <!-- Enlazamos el archivo de estilos CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}"/>
+</head>
+<body>
+
+  <!-- La barra de navegación solo aparece si el usuario ha iniciado sesión -->
+  {% if session.usuario %}
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <div class="navbar-left">
+        <!-- Logo/marca que lleva a la lista de contactos -->
+        <a href="{{ url_for('contactos') }}" class="brand">HelloContact</a>
+        <div class="nav-links">
+          <!-- Enlace activo se resalta con la clase "active" -->
+          <a href="{{ url_for('contactos') }}"
+             class="nav-link {% if request.endpoint == 'contactos' %}active{% endif %}">
+            Contactos
+          </a>
+          <a href="{{ url_for('buscar') }}"
+             class="nav-link {% if request.endpoint == 'buscar' %}active{% endif %}">
+            🔍 Buscar
+          </a>
+          <a href="{{ url_for('reporte') }}"
+             class="nav-link {% if request.endpoint == 'reporte' %}active{% endif %}">
+            📊 Reportes
+          </a>
+        </div>
+      </div>
+      <div class="navbar-right">
+        <!-- Mostramos el nombre del usuario que está conectado -->
+        <span class="nav-user">👤 {{ session.usuario }}</span>
+        <!-- Botón para cerrar sesión -->
+        <a href="{{ url_for('logout') }}" class="btn btn-outline btn-sm">Salir</a>
+      </div>
+    </div>
+  </nav>
+  {% endif %}
+
+  <!-- Mensajes de éxito o error que Flask envía con flash() -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-container">
+        {% for cat, msg in messages %}
+          <!-- cat puede ser "success" o "error", cambia el color -->
+          <div class="flash flash-{{ cat }}">
+            {{ msg }}
+            <button class="flash-close" onclick="this.parentElement.remove()">✕</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Aquí cada página inserta su propio contenido -->
+  <main>{% block content %}{% endblock %}</main>
+
+  <!-- Enlazamos el archivo JavaScript al final para que cargue después del HTML -->
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!-- Heredamos la estructura base -->
+{% extends "base.html" %}
+{% block title %}Reporte – HelloContact{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+
+  <!-- Encabezado con ícono y botón volver -->
+  <div class="page-header" style="margin-bottom:28px;">
+    <div class="page-title-icon">
+      <div class="title-icon-box">📊</div>
+      <h1 class="page-title">Reportes y Análisis</h1>
+    </div>
+    <a href="{{ url_for('contactos') }}" class="btn-back">← Volver</a>
+  </div>
+
+  <!-- Tarjetas de estadísticas generales -->
+  <div class="stats-grid">
+
+    <!-- Total de contactos registrados -->
+    <div class="stat-card">
+      <div class="stat-top">
+        <span class="stat-lbl">Total de Contactos</span>
+        <span>👥</span>
+      </div>
+      <p class="stat-num">{{ total }}</p>
+      <p class="stat-sub">Contactos activos</p>
+    </div>
+
+    <!-- Cantidad de contactos marcados como favoritos -->
+    <div class="stat-card">
+      <div class="stat-top">
+        <span class="stat-lbl">Favoritos</span>
+        <span>⭐</span>
+      </div>
+      <p class="stat-num">{{ favoritos }}</p>
+      <p class="stat-sub">
+        <!-- Calculamos el porcentaje, evitamos dividir entre 0 -->
+        {% if total > 0 %}{{ ((favoritos/total)*100)|round(0)|int }}% del total
+        {% else %}0% del total{% endif %}
+      </p>
+    </div>
+
+    <!-- Contactos que NO son favoritos -->
+    <div class="stat-card">
+      <div class="stat-top">
+        <span class="stat-lbl">Normales</span>
+        <span>👤</span>
+      </div>
+      <p class="stat-num">{{ no_favoritos }}</p>
+      <p class="stat-sub">Sin marcar como favorito</p>
+    </div>
+
+    <!-- Número de categorías disponibles -->
+    <div class="stat-card">
+      <div class="stat-top">
+        <span class="stat-lbl">Categorías</span>
+        <span>📂</span>
+      </div>
+      <!-- categorias|length cuenta cuántas categorías hay en la lista -->
+      <p class="stat-num">{{ categorias|length }}</p>
+      <p class="stat-sub">Tipos disponibles</p>
+    </div>
+  </div>
+
+  <!-- Gráficas generadas con Chart.js -->
+  <div class="charts-row">
+    <div class="chart-card">
+      <p class="chart-title">Contactos por Categoría</p>
+      <!-- Canvas donde Chart.js dibuja la gráfica de barras -->
+      <div style="position:relative; height:260px;">
+        <canvas id="bar-chart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <p class="chart-title">Favoritos vs Normales</p>
+      <!-- Canvas donde Chart.js dibuja la gráfica de dona -->
+      <div style="position:relative; height:260px;">
+        <canvas id="pie-chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla con desglose por categoría y barra de progreso -->
+  <div class="table-wrap" style="margin-bottom:20px;">
+    <table class="contacts-table">
+      <thead>
+        <tr>
+          <th>Categoría</th>
+          <th>Cantidad</th>
+          <th>Porcentaje</th>
+          <th>Distribución</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cat in categorias %}
+        <tr>
+          <td class="td-name">{{ cat }}</td>
+          <td>{{ por_categoria[cat] }}</td>
+          <td>
+            {% if total > 0 %}{{ ((por_categoria[cat]/total)*100)|round(1) }}%
+            {% else %}0%{% endif %}
+          </td>
+          <td>
+            <!-- Barra de progreso visual según el porcentaje -->
+            <div class="progress-bg">
+              <div class="progress-fill"
+                   style="width:{% if total > 0 %}{{ ((por_categoria[cat]/total)*100)|round(0)|int }}%{% else %}0%{% endif %};">
+              </div>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Resumen en texto con los datos principales -->
+  <div class="summary-card">
+    <p class="summary-title">Resumen</p>
+    <p class="summary-text">
+      Tienes <strong>{{ total }} contacto{% if total != 1 %}s{% endif %} en total</strong>
+      en tu base de datos.
+      {% if favoritos > 0 %}
+        {{ favoritos }} están marcados como favoritos
+        ({{ ((favoritos/total)*100)|round(0)|int }}% del total).
+      {% else %}
+        Ninguno está marcado como favorito aún.
+      {% endif %}
+      Mantén tu lista organizada y actualizada para una mejor gestión.
+    </p>
+  </div>
+</div>
+
+<!-- Cargamos Chart.js desde CDN para las gráficas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+// Esperamos que el HTML esté listo antes de dibujar las gráficas
+document.addEventListener('DOMContentLoaded', function () {
+
+  // Obtenemos las categorías y sus cantidades desde Flask
+  var cats = {{ categorias | tojson }};
+  var catData = {};
+  {% for cat in categorias %}
+    catData["{{ cat }}"] = {{ por_categoria[cat] }};
+  {% endfor %}
+  var vals = cats.map(function(c) { return catData[c]; });
+
+  // Gráfica de barras: contactos por categoría
+  new Chart(document.getElementById('bar-chart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: cats,
+      datasets: [{
+        label: 'Contactos',
+        data: vals,
+        backgroundColor: '#1c398e',
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1, color: '#6b7280' }, grid: { color: '#f3f4f6' } },
+        x: { ticks: { color: '#6b7280' }, grid: { display: false } }
+      }
+    }
+  });
+
+  // Gráfica de dona: favoritos vs normales
+  new Chart(document.getElementById('pie-chart').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Favoritos', 'Normales'],
+      datasets: [{
+        data: [{{ favoritos }}, {{ no_favoritos }}],
+        backgroundColor: ['#1c398e', '#e5e7eb'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { color: '#4b5563', padding: 16 } }
+      },
+      cutout: '65%'
+    }
+  });
+
+});
+</script>
+{% endblock %}
