@@ -1,0 +1,100 @@
+<!-- Heredamos la estructura base -->
+{% extends "base.html" %}
+{% block title %}Agregar Contacto – HelloContact{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+  <div class="page-header">
+    <h1 class="page-title">Agregar Nuevo Contacto</h1>
+    <!-- Botón para volver sin guardar cambios -->
+    <a href="{{ url_for('contactos') }}" class="btn-back">← Volver</a>
+  </div>
+
+  <div class="form-card">
+    <!-- onsubmit valida los datos en el navegador antes de enviar al servidor -->
+    <form method="POST" action="{{ url_for('agregar') }}" onsubmit="return validarContacto()">
+
+      <!-- Fila con dos columnas: Nombre y Apellido -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nombre <span class="required">*</span></label>
+          <!-- value mantiene el dato si el formulario tuvo errores y se recargó -->
+          <input type="text" name="nombre" id="f-nombre" class="form-input"
+                 placeholder="Ej: María"
+                 value="{{ form.nombre if form else '' }}" required
+                 oninvalid="this.setCustomValidity('Por favor ingresa el nombre')" oninput="this.setCustomValidity('')"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Apellido</label>
+          <input type="text" name="apellido" class="form-input"
+                 placeholder="Ej: García"
+                 value="{{ form.apellido if form else '' }}"/>
+        </div>
+      </div>
+
+      <!-- Fila con Teléfono y Correo -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Teléfono <span class="required">*</span></label>
+          <!-- maxlength="8" limita a 8 caracteres, el JS solo permite números -->
+          <input type="text" name="telefono" id="f-telefono" class="form-input"
+                 placeholder="8 dígitos" maxlength="8"
+                 value="{{ form.telefono if form else '' }}" required
+                 oninvalid="this.setCustomValidity('El teléfono debe tener exactamente 8 dígitos')" oninput="this.setCustomValidity('')"/>
+          <small class="form-hint">Solo números, exactamente 8 dígitos.</small>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Correo Electrónico <span class="required">*</span></label>
+          <input type="email" name="correo" id="f-correo" class="form-input"
+                 placeholder="usuario@dominio.com"
+                 value="{{ form.correo if form else '' }}" required
+                 oninvalid="this.setCustomValidity('Ingresa un correo válido: usuario@dominio.com')" oninput="this.setCustomValidity('')"/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Dirección</label>
+        <input type="text" name="direccion" class="form-input"
+               placeholder="Calle, ciudad..."
+               value="{{ form.direccion if form else '' }}"/>
+      </div>
+
+      <!-- Fila con Categoría y Favorito -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Categoría</label>
+          <!-- Select con las categorías que vienen desde Flask (CATEGORIAS) -->
+          <select name="categoria" class="form-select">
+            {% for cat in categorias %}
+              <option value="{{ cat }}"
+                {% if form and form.categoria == cat %}selected{% endif %}>
+                {{ cat }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">¿Favorito?</label>
+          <div class="check-wrap">
+            <input type="checkbox" name="favorito" id="f-fav"
+                   {% if form and form.favorito %}checked{% endif %}/>
+            <label for="f-fav">Marcar como favorito ⭐</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado</label>
+          <select name="estado" class="form-select">
+            <option value="Conectado">🟢 Conectado</option>
+            <option value="Desconectado">🔴 Desconectado</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <a href="{{ url_for('contactos') }}" class="btn btn-outline">Cancelar</a>
+        <button type="submit" class="btn btn-primary">Guardar Contacto</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

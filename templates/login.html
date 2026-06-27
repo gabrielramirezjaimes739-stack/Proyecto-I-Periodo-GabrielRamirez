@@ -1,0 +1,44 @@
+<!-- Heredamos la estructura base (navbar, flash, etc.) -->
+{% extends "base.html" %}
+{% block title %}Iniciar Sesión – HelloContact{% endblock %}
+
+{% block content %}
+<div class="auth-bg">
+  <div class="auth-card">
+
+    <!-- Ícono y título de la aplicación -->
+    <div class="auth-logo-wrap">🔐</div>
+    <h1 class="auth-title">HelloContact</h1>
+    <p class="auth-subtitle">Inicia sesión para gestionar tus contactos</p>
+
+    <!-- Formulario de login -->
+    <!-- onsubmit llama a validarLogin() en app.js antes de enviar -->
+    <form method="POST" action="{{ url_for('login') }}" onsubmit="return validarLogin()">
+
+      <div class="form-group">
+        <label class="form-label">Usuario</label>
+        <input type="text" name="usuario" id="login-usuario"
+               class="form-input" placeholder="admin" required
+                 oninvalid="this.setCustomValidity('Por favor ingresa tu usuario')" oninput="this.setCustomValidity('')"/>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Contraseña</label>
+        <input type="password" name="contrasena" id="login-contrasena"
+               class="form-input" placeholder="••••••••" required
+                 oninvalid="this.setCustomValidity('Por favor ingresa tu contraseña')" oninput="this.setCustomValidity('')"/>
+      </div>
+
+      <!-- Botón que envía el formulario al servidor -->
+      <button type="submit" class="btn btn-blue btn-full">Iniciar Sesión</button>
+    </form>
+
+    <!-- Enlace a la pantalla de registro -->
+    <p class="auth-footer">
+      ¿No tienes cuenta? <a href="{{ url_for('registro') }}" class="auth-link">Crear cuenta</a>
+    </p>
+    <p class="auth-demo">Demo: usuario <strong>admin</strong> / contraseña <strong>1234</strong></p>
+
+  </div>
+</div>
+{% endblock %}
