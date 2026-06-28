@@ -1,6 +1,6 @@
 ============================================================
   HelloContact - Gestor de Contactos (Etapa 3)
-  Estudiante: [Tu Nombre y Apellido]
+  Estudiante: Gabriel Ramirez
   Profesora: Sofía Rodríguez Vargas
 ============================================================
 
